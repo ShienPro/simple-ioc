@@ -10,6 +10,6 @@ import java.util.List;
 public class Bean {
     private String beanName;
     private Class<?> beanClass;
-    private List<Arg> constructorArgs;
-    private List<Arg> injectArgs;
+    private List<ConstructorArg> constructorArgs;
+    private List<InjectArg> injectArgs;
 }

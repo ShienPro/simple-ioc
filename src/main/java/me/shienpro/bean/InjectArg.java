@@ -5,9 +5,10 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class Arg<T> {
+public class InjectArg<T> {
     private String name;
     private Class<T> argClass;
     private T value;
     private Bean refBean;
+    private boolean useSetter;
 }
