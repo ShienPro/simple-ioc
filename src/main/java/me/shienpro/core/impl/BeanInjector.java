@@ -6,7 +6,6 @@ import me.shienpro.bean.InjectArg;
 import me.shienpro.core.BeanInitializer;
 import me.shienpro.excepiton.ContextInitializationException;
 import me.shienpro.utils.InjectUtils;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -18,7 +17,7 @@ class BeanInjector {
     static <T> T createBean(Bean bean) {
         try {
             Class beanClass = bean.getBeanClass();
-            if (CollectionUtils.isEmpty(bean.getConstructorArgs())) {
+            if (bean.getConstructorArgs() == null || bean.getConstructorArgs().isEmpty()) {
                 return (T) beanClass.newInstance();
             } else {
                 List<ConstructorArg> args = bean.getConstructorArgs();
@@ -49,7 +48,7 @@ class BeanInjector {
 
     static void injectArgs(Bean bean, Object instance) {
         try {
-            if (CollectionUtils.isEmpty(bean.getInjectArgs())) return;
+            if (bean.getInjectArgs() == null || bean.getInjectArgs().isEmpty()) return;
 
             for (InjectArg injectArg : bean.getInjectArgs()) {
                 Field field = bean.getBeanClass().getDeclaredField(injectArg.getName());

@@ -7,7 +7,6 @@ import me.shienpro.core.Context;
 import me.shienpro.excepiton.BeanNameRepeatException;
 import me.shienpro.excepiton.CanNotFindBeanException;
 import me.shienpro.excepiton.MultipleBeanException;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,7 +46,7 @@ public class ContextImpl implements Context {
     @Override
     public <T> T getBeanInstance(Class<T> beanClass) {
         List<Bean> list = classBeanMap.get(beanClass);
-        if (CollectionUtils.isEmpty(list)) throw CanNotFindBeanException.of(beanClass);
+        if (list == null || list.isEmpty()) throw CanNotFindBeanException.of(beanClass);
         if (list.size() > 1) throw MultipleBeanException.of(beanClass);
         Bean bean = list.get(0);
         return BeanInitializer.getBeanInstanceAndRegister(bean);
@@ -56,7 +55,7 @@ public class ContextImpl implements Context {
     @Override
     public <T> T getBeanInstanceByClassName(String className) {
         List<Bean> list = classNameBeanMap.get(className);
-        if (CollectionUtils.isEmpty(list)) throw CanNotFindBeanException.ofClassname(className);
+        if (list == null || list.isEmpty()) throw CanNotFindBeanException.ofClassname(className);
         if (list.size() > 1) throw MultipleBeanException.of(className);
         Bean bean = list.get(0);
         return BeanInitializer.getBeanInstanceAndRegister(bean);
