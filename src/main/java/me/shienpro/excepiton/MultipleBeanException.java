@@ -6,10 +6,10 @@ public class MultipleBeanException extends RuntimeException {
     }
 
     public static MultipleBeanException of(Class beanClass) {
-        return new MultipleBeanException(String.format("Cannot find bean with class %s", beanClass.getName()));
+        return new MultipleBeanException(String.format("There are multiple %s bean", beanClass.getName()));
     }
 
     public static MultipleBeanException of(String className) {
-        return new MultipleBeanException(String.format("Cannot find bean with classname %s", className));
+        return new MultipleBeanException(String.format("There are multiple %s bean", className));
     }
 }
