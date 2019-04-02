@@ -13,20 +13,20 @@ public class SingletonBeanInitializer implements BeanInitializer {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getInstance(Bean bean) {
-        T entity = (T) beanEntityMap.get(bean);
-        if (entity != null) {
-            return entity;
+        T instance = (T) beanEntityMap.get(bean);
+        if (instance != null) {
+            return instance;
         }
 
-        entity = BeanInjector.createBean(bean);
-        BeanInjector.injectArgs(bean, entity);
+        instance = BeanInjector.createBeanInstance(bean);
+        BeanInjector.injectArgs(bean, instance);
 
         // Register bean
-        if (entity != null) {
-            beanEntityMap.put(bean, entity);
+        if (instance != null) {
+            beanEntityMap.put(bean, instance);
         }
 
-        return entity;
+        return instance;
     }
 
     @Override

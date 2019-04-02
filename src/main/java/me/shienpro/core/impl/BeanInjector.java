@@ -1,9 +1,11 @@
 package me.shienpro.core.impl;
 
+import me.shienpro.bean.ArgType;
 import me.shienpro.bean.Bean;
 import me.shienpro.bean.ConstructorArg;
 import me.shienpro.bean.InjectArg;
-import me.shienpro.core.BeanInitializer;
+import me.shienpro.core.Context;
+import me.shienpro.excepiton.BeanDoesNotExistException;
 import me.shienpro.excepiton.ContextInitializationException;
 import me.shienpro.utils.InjectUtils;
 
@@ -13,8 +15,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 class BeanInjector {
+    private static Context context;
+
+    static void init(Context context) {
+        BeanInjector.context = context;
+    }
+
     @SuppressWarnings("unchecked")
-    static <T> T createBean(Bean bean) {
+    static <T> T createBeanInstance(Bean bean) {
         try {
             Class beanClass = bean.getBeanClass();
             if (bean.getConstructorArgs() == null || bean.getConstructorArgs().isEmpty()) {
@@ -30,13 +38,19 @@ class BeanInjector {
 
                 return constructor.newInstance(
                         args.stream().map(arg -> {
-                            Bean refBean = arg.getRefBean();
-                            if (refBean == null) {
-                                // value type arg
+                            int argType = arg.getArgType();
+                            if (argType == ArgType.VALUE) {
                                 return arg.getValue();
-                            } else {
-                                // ref type arg
-                                return BeanInitializer.getBeanInstanceAndRegister(refBean);
+                            }
+                            // ref type arg
+                            else {
+                                if (arg.getArgType() == ArgType.REF_BEAN_NAME) {
+                                    return context.getBeanInstance(arg.getRefBeanName());
+                                } else if (arg.getArgType() == ArgType.REF_CLASS_NAME) {
+                                    return context.getBeanInstanceByClassName(arg.getArgClass().getName());
+                                }
+
+                                throw new BeanDoesNotExistException(arg.getArgClass());
                             }
                         }).toArray()
                 );
@@ -51,11 +65,25 @@ class BeanInjector {
             if (bean.getInjectArgs() == null || bean.getInjectArgs().isEmpty()) return;
 
             for (InjectArg injectArg : bean.getInjectArgs()) {
-                Field field = bean.getBeanClass().getDeclaredField(injectArg.getName());
+                Object property = null;
+                int argType = injectArg.getArgType();
+                if (argType == ArgType.VALUE) {
+                    property = injectArg.getValue();
+                }
+                // ref type arg
+                else {
+                    if (injectArg.getArgType() == ArgType.REF_BEAN_NAME) {
+                        property = context.getBeanInstance(injectArg.getRefBeanName());
+                    } else if (injectArg.getArgType() == ArgType.REF_CLASS_NAME) {
+                        property = context.getBeanInstanceByClassName(injectArg.getArgClass().getName());
+                    }
 
-                Object property = injectArg.getRefBean() == null ?
-                        injectArg.getValue() :
-                        BeanInitializer.getBeanInstanceAndRegister(injectArg.getRefBean());
+                    if (property == null) {
+                        throw new BeanDoesNotExistException(injectArg.getName());
+                    }
+                }
+
+                Field field = bean.getBeanClass().getDeclaredField(injectArg.getName());
 
                 if (injectArg.isUseSetter()) {
                     InjectUtils.injectBySetter(field, instance, property);

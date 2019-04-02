@@ -13,7 +13,7 @@ public interface BeanInitializer {
     <T> ObjectFactory<T> geObjectFactory(Bean bean);
 
     @SuppressWarnings("unchecked")
-    static <T> T getBeanInstanceAndRegister(Bean bean) {
+    static <T> T getBeanInstance(Bean bean) {
         BeanInitializer beanInitializer =
                 bean.getScope() == Bean.SINGLETON ?
                         BeanInitializer.SINGLETON_BEAN_INITIALIZER :

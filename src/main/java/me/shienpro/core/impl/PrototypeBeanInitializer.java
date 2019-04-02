@@ -27,7 +27,7 @@ public class PrototypeBeanInitializer implements BeanInitializer {
         of = createObjectFactory(bean);
 
         // register object factory
-        if (of != null) {
+        if (of.getObject() != null) {
             beanObjectFactoryMap.put(bean, of);
         }
 
@@ -36,9 +36,9 @@ public class PrototypeBeanInitializer implements BeanInitializer {
 
     private <T> ObjectFactory<T> createObjectFactory(Bean bean) {
         return () -> {
-            T entity = BeanInjector.createBean(bean);
-            BeanInjector.injectArgs(bean, entity);
-            return entity;
+            T instance = BeanInjector.createBeanInstance(bean);
+            BeanInjector.injectArgs(bean, instance);
+            return instance;
         };
     }
 }
