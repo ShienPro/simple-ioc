@@ -19,12 +19,13 @@ public class SingletonBeanInitializer implements BeanInitializer {
         }
 
         instance = BeanInjector.createBeanInstance(bean);
-        BeanInjector.injectArgs(bean, instance);
 
         // Register bean
         if (instance != null) {
             beanEntityMap.put(bean, instance);
         }
+
+        BeanInjector.injectArgs(bean, instance);
 
         return instance;
     }
