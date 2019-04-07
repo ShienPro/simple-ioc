@@ -8,8 +8,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class InjectUtils {
-
-
     public static void inject(Field field, Object target, Object property) throws InjectException {
         if (field == null) throw new InjectException(new NullPointerException("field can not be null"));
 
@@ -33,9 +31,9 @@ public class InjectUtils {
 
         Method[] methods = target.getClass().getDeclaredMethods();
         Arrays.stream(methods)
-                .filter(method -> method.getName().equals(setterName) &&
-                        method.getParameterTypes().length == 1 &&
-                        method.getParameterTypes()[0].isInstance(property))
+                .filter(method -> method.getName().equals(setterName))
+                .filter(method -> method.getParameterTypes().length == 1)
+                .filter(method -> TypeUtils.primitiveToReference(method.getParameterTypes()[0]).isInstance(property))
                 .forEach(method -> {
                     try {
                         method.invoke(target, property);
@@ -43,10 +41,5 @@ public class InjectUtils {
                         throw new InjectException(e);
                     }
                 });
-    }
-
-    private static boolean isBoolean(Field field) {
-        Class<?> fieldType = field.getType();
-        return fieldType.getName().equals("boolean") || fieldType.equals(Boolean.class);
     }
 }
