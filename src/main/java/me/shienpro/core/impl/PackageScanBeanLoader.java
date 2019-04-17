@@ -63,7 +63,7 @@ public class PackageScanBeanLoader implements BeanLoader {
             beanNameCache.put(simpleName, ++count);
         }
 
-        Bean bean = new Bean().setBeanClass(c).setBeanName(beanName);
+        Bean bean = new Bean().setBeanClass(c).setBeanName(beanName).setScope(component.scope());
 
         Constructor<?> ctor = Arrays.stream(c.getConstructors())
                 .filter(constructor -> constructor.getAnnotation(Autowired.class) != null)
