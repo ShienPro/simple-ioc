@@ -65,11 +65,11 @@ public class PackageScanBeanLoader implements BeanLoader {
 
         Bean bean = new Bean().setBeanClass(c).setBeanName(beanName).setScope(component.scope());
 
-        Constructor<?> ctor = Arrays.stream(c.getConstructors())
+        Constructor<?> ctor = Arrays.stream(c.getDeclaredConstructors())
                 .filter(constructor -> constructor.getAnnotation(Autowired.class) != null)
                 .findFirst().orElseGet(() -> {
                     try {
-                        return c.getConstructor();
+                        return c.getDeclaredConstructor();
                     } catch (NoSuchMethodException e) {
                         throw new ContextInitializationException(e);
                     }

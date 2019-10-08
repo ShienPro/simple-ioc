@@ -12,7 +12,9 @@ import me.shienpro.utils.InjectUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 class BeanInjector {
     private static Context context;
@@ -25,36 +27,30 @@ class BeanInjector {
     static <T> T createBeanInstance(Bean bean) {
         try {
             Class beanClass = bean.getBeanClass();
-            if (bean.getConstructorArgs() == null || bean.getConstructorArgs().isEmpty()) {
-                return (T) beanClass.newInstance();
-            } else {
-                List<ConstructorArg> args = bean.getConstructorArgs();
-
-                Constructor<T> constructor = beanClass.getConstructor(
-                        args.stream()
-                                .map(ConstructorArg::getArgClass)
-                                .toArray(Class[]::new)
-                );
-
-                return constructor.newInstance(
-                        args.stream().map(arg -> {
-                            int argType = arg.getArgType();
-                            if (argType == ArgType.VALUE) {
-                                return arg.getValue();
+            List<ConstructorArg> args = Optional.ofNullable(bean.getConstructorArgs()).orElseGet(ArrayList::new);
+            Constructor<T> constructor = beanClass.getDeclaredConstructor(
+                    args.stream()
+                            .map(ConstructorArg::getArgClass)
+                            .toArray(Class[]::new)
+            );
+            constructor.setAccessible(true);
+            return constructor.newInstance(
+                    args.stream().map(arg -> {
+                        int argType = arg.getArgType();
+                        if (argType == ArgType.VALUE) {
+                            return arg.getValue();
+                        }
+                        // ref type arg
+                        else {
+                            if (arg.getArgType() == ArgType.REF_BEAN_NAME) {
+                                return context.getBeanInstance(arg.getRefBeanName());
+                            } else if (arg.getArgType() == ArgType.REF_CLASS_NAME) {
+                                return context.getBeanInstanceByClassName(arg.getArgClass().getName());
                             }
-                            // ref type arg
-                            else {
-                                if (arg.getArgType() == ArgType.REF_BEAN_NAME) {
-                                    return context.getBeanInstance(arg.getRefBeanName());
-                                } else if (arg.getArgType() == ArgType.REF_CLASS_NAME) {
-                                    return context.getBeanInstanceByClassName(arg.getArgClass().getName());
-                                }
-
-                                throw new BeanDoesNotExistException(arg.getArgClass());
-                            }
-                        }).toArray()
-                );
-            }
+                            throw new BeanDoesNotExistException(arg.getArgClass());
+                        }
+                    }).toArray()
+            );
         } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             throw new ContextInitializationException(e);
         }
