@@ -5,6 +5,8 @@ import me.shienpro.core.impl.ContextImpl;
 import me.shienpro.core.impl.PackageScanBeanLoader;
 import me.shienpro.excepiton.MainClassNotFoundException;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 public class IocRunner {
@@ -14,15 +16,26 @@ public class IocRunner {
 
     public static Context run() {
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        StackTraceElement mainStack = stackTrace[stackTrace.length - 1];
-        if (!Objects.equals("main", mainStack.getMethodName())) {
+        StackTraceElement mainStack = null;
+
+        for (StackTraceElement stack : stackTrace) {
+            if (Objects.equals(stack.getMethodName(), "main")) {
+                mainStack = stack;
+            }
+        }
+        if (mainStack == null) {
             throw new MainClassNotFoundException();
         }
 
-        Class<?> mainClass = null;
+        Class<?> mainClass;
         try {
             mainClass = Class.forName(mainStack.getClassName());
-        } catch (ClassNotFoundException ignore) {
+            Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
+            if (!Modifier.isStatic(mainMethod.getModifiers())) {
+                throw new NoSuchMethodException();
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            throw new MainClassNotFoundException();
         }
 
         return run(mainClass);
