@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SingletonBeanInitializer implements BeanInitializer {
-    private Map<Bean, Object> beanEntityMap = new HashMap<>();
+    private final Map<Bean, Object> beanEntityMap = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -20,11 +20,8 @@ public class SingletonBeanInitializer implements BeanInitializer {
 
         instance = BeanInjector.createBeanInstance(bean);
 
-        // Register bean
-        if (instance != null) {
-            beanEntityMap.put(bean, instance);
-        }
-
+        // register bean
+        beanEntityMap.put(bean, instance);
         BeanInjector.injectArgs(bean, instance);
 
         return instance;

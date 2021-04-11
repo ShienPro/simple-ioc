@@ -8,13 +8,14 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 
 public class PackageScanUtils {
-    public static Set<String> scanPackage(Class mainClass) {
+    public static Set<String> scanPackage(Class<?> mainClass) {
         Set<String> classNameSet = new HashSet<>();
         ClassLoader cl = PackageScanUtils.class.getClassLoader();
 
@@ -24,6 +25,7 @@ public class PackageScanUtils {
         try {
             // current jar
             URL mainURL = mainClass.getResource(mainClass.getSimpleName() + ".class");
+            Objects.requireNonNull(mainURL);
             classNameSet.addAll(scanUrl(mainURL, pkg, path));
 
             // classpath

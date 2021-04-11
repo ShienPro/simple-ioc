@@ -22,8 +22,8 @@ public class TypeUtils {
         PRIMITIVE_CLASS_MAP.values().forEach(c -> PARSE_METHOD_MAP.put(c, getPM(c)));
     }
 
-    private static Method getPM(Class c) {
-        Class[] stringClassArr = {String.class};
+    private static Method getPM(Class<?> c) {
+        Class<?>[] stringClassArr = {String.class};
         return Arrays.stream(c.getDeclaredMethods())
                 .filter(m -> m.getName().startsWith("parse"))
                 .filter(m -> m.getParameterCount() == 1)
@@ -36,12 +36,12 @@ public class TypeUtils {
         return PRIMITIVE_CLASS_MAP.containsValue(type);
     }
 
-    public static Class primitiveToReference(Class clazz) {
+    public static Class<?> primitiveToReference(Class<?> clazz) {
         if (!clazz.isPrimitive()) return clazz;
         return PRIMITIVE_CLASS_MAP.get(clazz);
     }
 
-    public static Method getParseMethod(Class c) {
+    public static Method getParseMethod(Class<?> c) {
         return PARSE_METHOD_MAP.get(c);
     }
 }

@@ -5,7 +5,7 @@ public class MultipleBeanException extends RuntimeException {
         super(message);
     }
 
-    public static MultipleBeanException of(Class beanClass) {
+    public static MultipleBeanException of(Class<?> beanClass) {
         return new MultipleBeanException(String.format("There are multiple %s bean", beanClass.getName()));
     }
 

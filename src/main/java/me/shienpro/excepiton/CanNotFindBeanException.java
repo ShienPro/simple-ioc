@@ -5,7 +5,7 @@ public class CanNotFindBeanException extends RuntimeException {
         super(message);
     }
 
-    public static CanNotFindBeanException of(Class beanClass) {
+    public static CanNotFindBeanException of(Class<?> beanClass) {
         return new CanNotFindBeanException(String.format("Cannot find bean with class %s", beanClass.getName()));
     }
 

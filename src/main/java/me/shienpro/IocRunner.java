@@ -8,7 +8,7 @@ import me.shienpro.excepiton.MainClassNotFoundException;
 import java.util.Objects;
 
 public class IocRunner {
-    public static Context run(Class mainClass) {
+    public static Context run(Class<?> mainClass) {
         return new ContextImpl(PackageScanBeanLoader.fromMainClass(mainClass));
     }
 

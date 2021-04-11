@@ -14,6 +14,6 @@ public class Bean {
     private int scope;
     private String beanName;
     private Class<?> beanClass;
-    private List<ConstructorArg> constructorArgs;
-    private List<InjectArg> injectArgs;
+    private List<ConstructorArg<?>> constructorArgs;
+    private List<InjectArg<?>> injectArgs;
 }

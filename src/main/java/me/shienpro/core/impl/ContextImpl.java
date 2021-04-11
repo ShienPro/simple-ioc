@@ -11,9 +11,9 @@ import me.shienpro.excepiton.MultipleBeanException;
 import java.util.*;
 
 public class ContextImpl implements Context {
-    private Map<Class, List<Bean>> classBeanMap = new HashMap<>();
-    private Map<String, List<Bean>> classNameBeanMap = new HashMap<>();
-    private Map<String, Bean> beanNameMap = new HashMap<>();
+    private final Map<Class<?>, List<Bean>> classBeanMap = new HashMap<>();
+    private final Map<String, List<Bean>> classNameBeanMap = new HashMap<>();
+    private final Map<String, Bean> beanNameMap = new HashMap<>();
 
     public ContextImpl(BeanLoader loader) {
         BeanInjector.init(this);
@@ -24,7 +24,7 @@ public class ContextImpl implements Context {
 
     private void registerBean(Bean bean) {
         Class<?> beanClass = bean.getBeanClass();
-        Set<Class> classSet = new HashSet<>(Arrays.asList(beanClass.getInterfaces()));
+        Set<Class<?>> classSet = new HashSet<>(Arrays.asList(beanClass.getInterfaces()));
         while (beanClass != null) {
             classSet.add(beanClass);
             beanClass = beanClass.getSuperclass();

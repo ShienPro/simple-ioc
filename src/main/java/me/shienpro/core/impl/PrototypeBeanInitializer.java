@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PrototypeBeanInitializer implements BeanInitializer {
-    private Map<Bean, ObjectFactory> beanObjectFactoryMap = new HashMap<>();
+    private final Map<Bean, ObjectFactory<?>> beanObjectFactoryMap = new HashMap<>();
 
     @Override
     @SuppressWarnings("unchecked")
@@ -19,7 +19,7 @@ public class PrototypeBeanInitializer implements BeanInitializer {
     @Override
     @SuppressWarnings("unchecked")
     public <T> ObjectFactory<T> geObjectFactory(Bean bean) {
-        ObjectFactory<T> of = beanObjectFactoryMap.get(bean);
+        ObjectFactory<T> of = (ObjectFactory<T>) beanObjectFactoryMap.get(bean);
         if (of != null) {
             return of;
         }

@@ -23,10 +23,10 @@ public class PackageScanBeanLoader implements BeanLoader {
     private PackageScanBeanLoader() {
     }
 
-    private Class mainClass;
-    private Map<String, Integer> beanNameCache = new HashMap<>();
+    private Class<?> mainClass;
+    private final Map<String, Integer> beanNameCache = new HashMap<>();
 
-    public static PackageScanBeanLoader fromMainClass(Class mainClass) {
+    public static PackageScanBeanLoader fromMainClass(Class<?> mainClass) {
         PackageScanBeanLoader loader = new PackageScanBeanLoader();
         loader.mainClass = mainClass;
         return loader;
@@ -57,8 +57,7 @@ public class PackageScanBeanLoader implements BeanLoader {
             beanName = component.value();
         } else {
             String simpleName = c.getSimpleName();
-            Integer count = beanNameCache.get(simpleName);
-            if (count == null) count = 0;
+            Integer count = beanNameCache.getOrDefault(simpleName, 0);
             beanName = simpleName + count;
             beanNameCache.put(simpleName, ++count);
         }
@@ -75,7 +74,7 @@ public class PackageScanBeanLoader implements BeanLoader {
                     }
                 });
 
-        List<ConstructorArg> constructorArgs = Arrays.stream(ctor.getParameters())
+        List<ConstructorArg<?>> constructorArgs = Arrays.stream(ctor.getParameters())
                 .map(p -> {
                     Class<?> type = p.getType();
 
@@ -88,7 +87,7 @@ public class PackageScanBeanLoader implements BeanLoader {
                     return convertAutowiredToArg(autowired, type);
                 }).collect(toList());
 
-        List<InjectArg> injectArgs = Stream.concat(
+        List<InjectArg<?>> injectArgs = Stream.concat(
                 Arrays.stream(c.getDeclaredFields())
                         .filter(this::hasAnnotation)
                         .map(this::convertFieldToArg),
@@ -103,17 +102,17 @@ public class PackageScanBeanLoader implements BeanLoader {
                 .setInjectArgs(injectArgs);
     }
 
-    @SuppressWarnings("unchecked")
-    private ConstructorArg convertValueToConstructorArg(Value value, Class<?> type) {
-        ConstructorArg constructorArg = new ConstructorArg()
+    private <T> ConstructorArg<T> convertValueToConstructorArg(Value value, Class<T> type) {
+        ConstructorArg<T> constructorArg = new ConstructorArg<T>()
                 .setArgType(ArgType.VALUE)
                 .setArgClass(type);
 
-        Object injectValue = getValueOfValueAnnotation(value, type);
+        T injectValue = getValueOfValueAnnotation(value, type);
         return constructorArg.setValue(injectValue);
     }
 
-    private Object getValueOfValueAnnotation(Value value, Class<?> type) {
+    @SuppressWarnings("unchecked")
+    private <T> T getValueOfValueAnnotation(Value value, Class<T> type) {
         String v = value.value();
         if (v.length() == 0) {
             throw new ValueException(type.getName());
@@ -124,29 +123,28 @@ public class PackageScanBeanLoader implements BeanLoader {
         }
 
         if (type.equals(String.class)) {
-            return v;
+            return (T) v;
         }
 
-        Object injectValue = null;
+        T injectValue = null;
 
-        Class referenceType = TypeUtils.primitiveToReference(type);
+        Class<T> referenceType = (Class<T>) TypeUtils.primitiveToReference(type);
 
         Method parseMethod = TypeUtils.getParseMethod(referenceType);
         if (parseMethod != null) {
             try {
-                injectValue = parseMethod.invoke(null, v);
+                injectValue = (T) parseMethod.invoke(null, v);
             } catch (IllegalAccessException | InvocationTargetException ignore) {
             }
         } else {
-            injectValue = v.charAt(0);
+            injectValue = (T) (Character) v.charAt(0);
         }
 
         return injectValue;
     }
 
-    @SuppressWarnings("unchecked")
-    private ConstructorArg convertAutowiredToArg(Autowired autowired, Class<?> type) {
-        ConstructorArg constructorArg = new ConstructorArg()
+    private <T> ConstructorArg<?> convertAutowiredToArg(Autowired autowired, Class<T> type) {
+        ConstructorArg<T> constructorArg = new ConstructorArg<T>()
                 .setArgClass(type);
 
         if (autowired != null && autowired.value().length() > 0) {
@@ -163,7 +161,7 @@ public class PackageScanBeanLoader implements BeanLoader {
         return ao.getAnnotation(Autowired.class) != null || ao.getAnnotation(Value.class) != null;
     }
 
-    private InjectArg convertFieldToArg(Field field) {
+    private InjectArg<?> convertFieldToArg(Field field) {
         return convertParamToArg(
                 field.getName(),
                 field.getType(),
@@ -181,12 +179,12 @@ public class PackageScanBeanLoader implements BeanLoader {
                 Character.isUpperCase(name.charAt(3));
     }
 
-    private InjectArg convertMethodToArg(Method method) {
+    private InjectArg<?> convertMethodToArg(Method method) {
         String methodName = method.getName();
         String name = methodName.length() == 4 ?
                 String.valueOf(Character.toLowerCase(methodName.charAt(3))) :
                 Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
-        Class type = method.getParameters()[0].getType();
+        Class<?> type = method.getParameters()[0].getType();
         return convertParamToArg(
                 name,
                 type,
@@ -196,15 +194,14 @@ public class PackageScanBeanLoader implements BeanLoader {
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private InjectArg convertParamToArg(String name, Class type, Value value, Autowired autowired, boolean useSetter) {
-        InjectArg injectArg = new InjectArg()
+    private <T> InjectArg<T> convertParamToArg(String name, Class<T> type, Value value, Autowired autowired, boolean useSetter) {
+        InjectArg<T> injectArg = new InjectArg<T>()
                 .setName(name)
                 .setArgClass(type)
                 .setUseSetter(useSetter);
 
         if (value != null) {
-            Object v = getValueOfValueAnnotation(value, type);
+            T v = getValueOfValueAnnotation(value, type);
             return injectArg
                     .setArgType(ArgType.VALUE)
                     .setValue(v);

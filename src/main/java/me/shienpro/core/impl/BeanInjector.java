@@ -26,9 +26,9 @@ class BeanInjector {
     @SuppressWarnings("unchecked")
     static <T> T createBeanInstance(Bean bean) {
         try {
-            Class beanClass = bean.getBeanClass();
-            List<ConstructorArg> args = Optional.ofNullable(bean.getConstructorArgs()).orElseGet(ArrayList::new);
-            Constructor<T> constructor = beanClass.getDeclaredConstructor(
+            Class<?> beanClass = bean.getBeanClass();
+            List<ConstructorArg<?>> args = Optional.ofNullable(bean.getConstructorArgs()).orElseGet(ArrayList::new);
+            Constructor<T> constructor = (Constructor<T>) beanClass.getDeclaredConstructor(
                     args.stream()
                             .map(ConstructorArg::getArgClass)
                             .toArray(Class[]::new)
@@ -60,7 +60,7 @@ class BeanInjector {
         try {
             if (bean.getInjectArgs() == null || bean.getInjectArgs().isEmpty()) return;
 
-            for (InjectArg injectArg : bean.getInjectArgs()) {
+            for (InjectArg<?> injectArg : bean.getInjectArgs()) {
                 Object property = null;
                 int argType = injectArg.getArgType();
                 if (argType == ArgType.VALUE) {
